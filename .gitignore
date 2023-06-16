@@ -1,3 +1,6 @@
+config.py
+# 깃허브 안 올라가게
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
