@@ -11,6 +11,9 @@ import mysql.connector
 from email_validator import validate_email, EmailNotValidError
 
 from utils import hash_password, check_password
+from flask_jwt_extended import create_access_token, get_jwt, jwt_required
+
+import datetime
 
 # EmailNotValidError 이메일이 정상이냐
 
@@ -89,28 +92,10 @@ class UserRegisterResource(Resource):
             print(e)
             return {'result' : 'fail' , 'error' : str(e)}, 500
 
+        # create_access_token(user_id, expires_delta=datetime.timedelta(days=10)) # 10분 로그인 유지
+        access_token = create_access_token(user_id)
 
-        return {'result' : 'success', 'user_id' : user_id}
-
-# class UserLoginResource(Resource):
-#     def post(self):
-#         data = request.get_json()
-#         hashed_password = hash_password(data['password'])
-#         print(hashed_password)
-#         connection = get_connection()
-#         query = '''select *
-#                 from user
-#                 where email = %s and password = %s;'''
-#         record = (data['email'], hashed_password)
-#         cursor = connection.cursor(dictionary=True)
-#         cursor.execute(query, record)
-#         result_list = cursor.fetchall()
-#         print('결과 리스트: ', result_list)
-#         if len(result_list) == 1:
-#             print('로그인 성공')
-#         else:
-#             print('로그인 실패')
-
+        return {'result' : 'success', 'access_token' : access_token}
 
 
 # 로그인 관련 개발
@@ -149,4 +134,25 @@ class UserLoginResource(Resource):
 
         # 4. 클라이언트에게 데이터를 보내준다.
         # 로그인이 되면 유저id를 암호화해서 이용해야 함.
-        return {'result' : 'success', 'user_id' : result_list[0]['id']}
+
+        access_token = create_access_token(result_list[0]['id'])
+
+        return {'result' : 'success', 'access_token' : access_token} # 실행할 때마다 토큰이 새로 바뀜.
+
+# 로그아웃
+# 로그아웃된 토큰을 저장할 set을 만든다.
+
+jwt_blocklist = set()
+
+class UserLogoutResource(Resource):
+
+    @jwt_required()
+    def delete(self):
+        jti = get_jwt()['jti']
+        print(jti)
+        jwt_blocklist.add(jti)
+        return {'result' : 'success'}
+
+
+# Bearer    # 이 뒤에 띄어쓰기 한칸 + " 빼고 토큰 붙이기.
+# eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY4NzE1MzUyMSwianRpIjoiM2U0NmI1MWEtMzBmNy00MWM5LWJhZjgtZmJiYTAwYmNkYzA5IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6MiwibmJmIjoxNjg3MTUzNTIxfQ.akZllLDdGGGO0wbS7zfa5SrbLspvzoVyj_JwGnB6XY8
