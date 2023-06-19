@@ -1,6 +1,7 @@
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from flask_restful import Resource
 from flask import request
+# pip install mysql-connector-python
 from mysql_connection import get_connection
 from mysql.connector import Error
 import mysql.connector
@@ -8,14 +9,16 @@ import mysql.connector
 # API 동작하는 코드를 만들기 위해서는
 # class(클래스)를 만들어야 한다.
 
-# class 란 비슷한 데이터끼리 모아놓은 것(테이블 생각)
+
+# class란? 비슷한 데이터끼리 모아놓은 것 (테이블 생각)
 # 클래스는 변수와 함수로 구성된 묶음
-# 테이블과 다른점 : 함수가 있다는 점 
+# 테이블과 다른점: 함수가 있다는 점!
 
-# API를 만들기 위해서는, 
+# API를 만들기 위해서는
 # flask_restful 라이브러리의 Resource 클래스를
-# 상속해서 만들어야 한다. 파이썬에서 상속은 괄호
+# 상속해서 만들어야 한다. 파이썬에서 상속은 괄호!
 
+# GET 메소드에서 경로로 넘어오는 변수는 get 함수의 파라미터로 사용
 
 class RecipeResource(Resource):
     
@@ -61,6 +64,9 @@ class RecipeResource(Resource):
             return{'result' : 'success', 'item' : {}}
         else :
             return{'result' : 'success', 'item' : result_list[0]}
+        
+        # 클래스를 하나 더 안 만들고 함수의 default값을 정해서 get할 때.
+        # return {'result': 'success', 'item': [i for i in result_list if i['id'] == recipe_id][0]}
         
         
     
@@ -244,6 +250,14 @@ class RecipeListResource(Resource):
             result_list[i]['created_at'] = row['created_at'].isoformat()    
             result_list[i]['updated_at'] = row['updated_at'].isoformat()    
             i = i + 1
+
+        # datetime타입 검사해서 다 바꿔주는 코드
+        # import datetime
+        # for row in result_list:
+        #     for i in row.items():
+        #         if isinstance(i[1], datetime.datetime):
+        #             result_list[result_list.index(row)][i[0]] = i[1].isoformat()
+
 
         return {'result' : 'success', 
                 'count' : len(result_list),
